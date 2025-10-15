@@ -1,0 +1,1 @@
+This is a simple GLM Code Plan API to connect your agentic code-tools to. The openai_glm_server exposes a simple openai spec api and the demo_client demonstrates how to utilize it in streaming and non-streaming modes with some demo tools and toys.
