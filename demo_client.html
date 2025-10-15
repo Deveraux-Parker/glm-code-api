@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLM Advanced Features Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #151515;
+            border-right: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            padding: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #2a2a2a;
+            color: #fff;
+        }
+
+        /* Control Groups */
+        .control-section {
+            padding: 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .control-section h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .control-group .value-display {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #333;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: #667eea;
+        }
+
+        .toggle-switch input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::after {
+            left: 22px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* Scenario Buttons */
+        .scenario-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .scenario-btn:hover {
+            background: #252525;
+            border-color: #667eea;
+        }
+
+        .scenario-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        /* Tools Section */
+        .tools-section {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .tool-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #0a0a0a;
+            border-radius: 4px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .tool-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .tool-description {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #151515;
+            padding: 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+        }
+
+        .status-dot.active {
+            background: #4ade80;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #0a0a0a;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+
+        /* Paragraph formatting within messages */
+        .message-content p {
+            margin: 0 0 0.5em 0;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content code {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9em;
+        }
+
+
+        /* Reasoning Display */
+        .reasoning-container {
+            margin-bottom: 16px;
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .reasoning-header {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .reasoning-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .reasoning-content {
+            padding: 16px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #fbbf24;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .reasoning-content.collapsed {
+            display: none;
+        }
+
+        /* Tool Calls Display */
+        .tool-call-container {
+            margin: 12px 0;
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tool-call-header {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .tool-call-content {
+            padding: 16px;
+        }
+
+        .tool-function {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .tool-arguments {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 4px;
+            color: #888;
+            white-space: pre-wrap;
+        }
+
+        /* Tool Response */
+        .tool-response {
+            margin-top: 12px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-left: 3px solid #4ade80;
+            border-radius: 4px;
+        }
+
+        .tool-response-header {
+            font-size: 12px;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .tool-response-content {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            color: #ccc;
+            white-space: pre-wrap;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: #151515;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper textarea:focus {
+            border-color: #667eea;
+        }
+
+
+        .send-button {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading Animation */
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Context Viewer Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            background: #151515;
+            border: 1px solid #333;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: #fff;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .context-section {
+            margin-bottom: 30px;
+        }
+
+        .context-section h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-section pre {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .context-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .context-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .context-stat-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Token Usage Display */
+        .token-usage {
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #0f0f0f;
+            border-radius: 4px;
+            border: 1px solid #2a2a2a;
+            display: inline-block;
+            transition: opacity 0.3s, max-height 0.3s, margin 0.3s, padding 0.3s;
+            overflow: hidden;
+        }
+
+        .token-usage.hidden {
+            display: none;
+        }
+
+        .token-usage-item {
+            display: inline-block;
+            margin-right: 12px;
+        }
+
+        .token-usage-item:last-child {
+            margin-right: 0;
+        }
+
+        .token-usage-label {
+            color: #666;
+        }
+
+        .token-usage-value {
+            color: #667eea;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>GLM Demo Controls</h2>
+
+        <div class="control-section">
+            <h3>Model Settings</h3>
+
+            <div class="control-group">
+                <label>Temperature</label>
+                <input type="range" id="tempSlider" min="0" max="100" value="70">
+                <div class="value-display" id="tempValue">0.7</div>
+            </div>
+
+            <div class="control-group">
+                <label>Max Tokens</label>
+                <input type="range" id="maxTokensSlider" min="100" max="15000" value="2000" step="100">
+                <div class="value-display" id="maxTokensValue">2000</div>
+            </div>
+
+            <div class="control-group">
+                <label>Reasoning Mode</label>
+                <select id="reasoningSelect">
+                    <option value="">None</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="streamToggle" checked>
+                    <span>Enable Streaming</span>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toolStreamToggle" checked>
+                    <span>Enable Tool Streaming</span>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showTokenUsageToggle" checked>
+                    <span>Show Token Usage</span>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <button onclick="showContextViewer()" style="width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;">
+                    📋 View API Context
+                </button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>System Prompt</h3>
+            <textarea id="systemPrompt" style="width: 100%; min-height: 100px; background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; border-radius: 6px; padding: 10px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; resize: vertical;">You are a helpful AI assistant with access to tools. Use tools when appropriate to answer questions. Think step by step when reasoning is enabled.</textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                <span style="font-size: 11px; color: #888;">This sets the AI's behavior and role</span>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="systemPromptCharCount" style="font-size: 11px; color: #888;">155 chars</span>
+                    <button onclick="resetSystemPrompt()" style="padding: 4px 8px; background: #333; color: #e0e0e0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 11px;">Reset</button>
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;">
+                <button onclick="setSystemPrompt('expert')" style="padding: 4px 8px; background: #1a1a1a; color: #888; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 11px;">Expert</button>
+                <button onclick="setSystemPrompt('teacher')" style="padding: 4px 8px; background: #1a1a1a; color: #888; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 11px;">Teacher</button>
+                <button onclick="setSystemPrompt('concise')" style="padding: 4px 8px; background: #1a1a1a; color: #888; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 11px;">Concise</button>
+                <button onclick="setSystemPrompt('creative')" style="padding: 4px 8px; background: #1a1a1a; color: #888; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 11px;">Creative</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>Test Scenarios</h3>
+
+            <button class="scenario-btn" data-scenario="weather">
+                🌤️ Weather & Temperature Conversion
+            </button>
+            <button class="scenario-btn" data-scenario="math">
+                🔢 Complex Math Calculation
+            </button>
+            <button class="scenario-btn" data-scenario="search">
+                🔍 Search & Analyze
+            </button>
+            <button class="scenario-btn" data-scenario="reasoning">
+                🧠 Pure Reasoning Test
+            </button>
+            <button class="scenario-btn" data-scenario="multi-tool">
+                🛠️ Multiple Tool Calls
+            </button>
+        </div>
+
+        <div class="control-section">
+            <h3>Available Tools</h3>
+            <div class="tools-section" id="toolsList">
+                <!-- Tools will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>GLM Advanced Features Demo</h1>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot" id="serverStatus"></div>
+                    <span>Server</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="streamingStatus"></div>
+                    <span>Streaming</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="toolsStatus"></div>
+                    <span>Tools</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="message assistant">
+                <div class="message-content">
+                    <p>👋 Welcome to the GLM Advanced Features Demo! I can demonstrate:</p>
+                    <p>
+                    • 🧠 Reasoning with different effort levels<br>
+                    • 🛠️ Tool calling with streaming<br>
+                    • 💬 Regular conversation
+                    </p>
+                    <p>💡 <strong>Tip:</strong> Set Reasoning Mode to "None" to disable reasoning (handled automatically by the server).</p>
+                    <p>Try one of the test scenarios on the left or type your own message!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
+                </div>
+                <button class="send-button" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Viewer Modal -->
+    <div id="contextModal" class="modal-overlay" onclick="closeContextModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>API Context Viewer</h2>
+                <button class="modal-close" onclick="closeContextModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Context will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GLM Tokenizer -->
+    <script src="./glm-tokenizer-standalone.js"></script>
+
+    <script>
+        /*
+         * =====================================================================
+         * GLM Advanced Features Demo Client
+         * =====================================================================
+         *
+         * OVERVIEW:
+         * This is a comprehensive web-based demo client for the GLM API that
+         * showcases streaming responses, reasoning mode, and tool calling with
+         * full support for recursive/multi-turn tool interactions.
+         *
+         * KEY FEATURES:
+         * ------------
+         * 1. **Streaming Support**: Real-time SSE streaming with incremental updates
+         * 2. **Reasoning Mode**: Displays model's internal reasoning process
+         * 3. **Tool Calling**: Function/tool calling with visual feedback
+         * 4. **Recursive Tool Calls**: Supports multiple rounds of tool calls
+         * 5. **Stop/Cancel**: Ability to stop generation at any point
+         * 6. **API Context Viewer**: Inspect request/response payloads
+         *
+         * ARCHITECTURE:
+         * ------------
+         * The client manages a complete conversation flow:
+         *
+         * Normal Flow (No Tools):
+         *   User Input → API Request → [Reasoning] → Content → Done
+         *
+         * Tool Calling Flow (Single Turn):
+         *   User Input → API Request → [Reasoning] → Content → Tool Calls
+         *   → Simulate Tool Execution → Follow-Up Request with Results
+         *   → [Reasoning] → Final Response → Done
+         *
+         * Recursive Tool Calling Flow (Multi-Turn):
+         *   User Input → API Request → Tool Calls → Tool Results
+         *   → Follow-Up Request → MORE Tool Calls → More Results
+         *   → Another Follow-Up → Final Response → Done
+         *
+         * STREAMING PROTOCOL:
+         * ------------------
+         * Server sends SSE (Server-Sent Events) in format: "data: {json}\n\n"
+         *
+         * Stream Phases:
+         * 1. Initial chunk: delta.role = "assistant"
+         * 2. Reasoning chunks: delta.reasoning_content (if reasoning_effort set)
+         * 3. Content chunks: delta.content (the actual response)
+         * 4. Tool call chunks: delta.tool_calls (incremental tool call data)
+         * 5. Final chunk: finish_reason = "stop" | "tool_calls"
+         *
+         * Delta Object Structure:
+         * {
+         *   role?: "assistant",           // Only in first chunk
+         *   reasoning_content?: string,   // Incremental reasoning
+         *   content?: string,             // Incremental response text
+         *   tool_calls?: [{               // Incremental tool calls
+         *     index: number,              // Tool call index (0, 1, 2...)
+         *     id?: string,                // Unique ID (first chunk only)
+         *     type?: "function",          // Always "function"
+         *     function?: {
+         *       name?: string,            // Function name (first chunk)
+         *       arguments?: string        // Partial JSON (streamed)
+         *     }
+         *   }]
+         * }
+         *
+         * TOOL CALL STREAMING:
+         * -------------------
+         * Tool calls are streamed incrementally:
+         *
+         * Chunk 1: {index: 0, id: "call_abc", type: "function", function: {name: "get_weather"}}
+         * Chunk 2: {index: 0, function: {arguments: '{"loc'}}
+         * Chunk 3: {index: 0, function: {arguments: 'ation":'}}
+         * Chunk 4: {index: 0, function: {arguments: ' "NYC"}'}}
+         * Final:   finish_reason = "tool_calls"
+         *
+         * We accumulate arguments by index in the `toolCalls` object.
+         *
+         * RECURSIVE TOOL CALLING:
+         * ----------------------
+         * When finish_reason="tool_calls":
+         * 1. Simulate tool execution (client-side)
+         * 2. Build follow-up request with:
+         *    - Original messages
+         *    - Assistant message with tool_calls
+         *    - Tool result messages
+         * 3. Make new request → might get MORE tool calls
+         * 4. Repeat until finish_reason="stop"
+         *
+         * Message Format for Follow-Up:
+         * [
+         *   {role: "user", content: "..."},
+         *   {role: "assistant", content: "...", tool_calls: [...]},
+         *   {role: "tool", name: "get_weather", content: "{result}"},
+         *   ... (repeat for each tool)
+         * ]
+         *
+         * STATE MANAGEMENT:
+         * ----------------
+         * Key state variables:
+         * - isProcessing: True during any generation
+         * - waitingForFollowUp: True between tool execution and follow-up response
+         * - currentAbortController: Used to cancel ongoing requests
+         * - conversationHistory: All messages for context
+         * - toolCalls: Accumulator for streaming tool calls (by index)
+         *
+         * STOP/CANCEL MECHANISM:
+         * ---------------------
+         * - Button changes to "Stop" during generation
+         * - Uses AbortController to cancel fetch requests
+         * - Cancels both initial and follow-up requests
+         * - Cleans up loading indicators
+         * - Resets all state flags
+         *
+         * UI COMPONENTS:
+         * -------------
+         * - Reasoning Display: Collapsible box showing model's thinking
+         * - Tool Call Display: Shows function name and arguments
+         * - Tool Response: Shows simulated execution result
+         * - Loading Indicators: Animated dots during wait periods
+         * - Context Viewer Modal: Displays full API request/response
+         *
+         * SCROLLING BEHAVIOR:
+         * ------------------
+         * Auto-scrolls to keep latest content visible:
+         * - After creating reasoning display
+         * - After updating content
+         * - After creating tool call displays
+         * - After adding tool responses
+         * - After follow-up responses
+         *
+         * ERROR HANDLING:
+         * --------------
+         * - HTTP errors: Display error message
+         * - Parse errors: Log to console, continue streaming
+         * - Abort errors: Silent (user-initiated)
+         * - Network errors: Display error message
+         *
+         * SIMULATED TOOLS:
+         * ---------------
+         * Client simulates tool execution (no actual API calls):
+         * - get_weather: Returns fake weather data
+         * - calculate: Evaluates math expressions using eval()
+         * - search_web: Returns query-relevant fake search results
+         * - analyze_code: Returns fake code analysis
+         *
+         * REASONING MODE:
+         * --------------
+         * Controlled by reasoning_effort parameter:
+         * - "low": Light reasoning
+         * - "medium": Moderate reasoning
+         * - "high": Deep reasoning
+         * - undefined: No reasoning (adds /nothink and </think> stop token)
+         *
+         * When disabled, adds "/nothink" suffix to message and "</think>"
+         * stop token to prevent reasoning content generation.
+         *
+         * KEY FUNCTIONS:
+         * -------------
+         * - sendMessage(): Main entry point for user messages
+         * - handleStreamingResponse(): Processes SSE stream
+         * - sendToolResultsForFinalResponse(): Handles follow-up after tools
+         * - createToolCallDisplay(): Creates visual tool call UI
+         * - simulateToolResponse(): Executes and displays tool results
+         * - stopGeneration(): Cancels ongoing generation
+         * - formatMessageContent(): Safely formats text with paragraphs
+         *
+         * SECURITY:
+         * --------
+         * - HTML escaping in formatMessageContent() prevents XSS
+         * - Tool execution is client-side only (no server execution)
+         * - CORS enabled on server for development
+         *
+         * PERFORMANCE:
+         * -----------
+         * - Streaming reduces time-to-first-token
+         * - Incremental DOM updates for smooth UX
+         * - Efficient string concatenation for content accumulation
+         * - Minimal re-renders during streaming
+         *
+         * BROWSER COMPATIBILITY:
+         * ---------------------
+         * Requires modern browser with:
+         * - Fetch API with streaming support
+         * - ReadableStream API
+         * - TextDecoder API
+         * - AbortController API
+         * - ES6+ JavaScript features
+         *
+         * DEBUGGING:
+         * ---------
+         * Enable console logging to see:
+         * - [FLOW]: Delta structure for each chunk
+         * - [FOLLOW-UP]: Follow-up request details
+         * - [TOOL RESULTS]: Tool execution info
+         * - [STOP]: Cancellation events
+         * - All logs include relevant context
+         *
+         * =====================================================================
+         */
+
+        // =========================
+        // CONFIGURATION
+        // =========================
+
+        // API Configuration
+        const API_URL = 'http://localhost:8000/v1/chat/completions';
+
+        // Available Tools
+        const availableTools = [
+            {
+                type: "function",
+                function: {
+                    name: "get_weather",
+                    description: "Get the current weather in a given location",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            location: {
+                                type: "string",
+                                description: "The city and state, e.g. San Francisco, CA"
+                            },
+                            unit: {
+                                type: "string",
+                                enum: ["celsius", "fahrenheit"],
+                                description: "The temperature unit"
+                            }
+                        },
+                        required: ["location"]
+                    }
+                }
+            },
+            {
+                type: "function",
+                function: {
+                    name: "calculate",
+                    description: "Perform mathematical calculations",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            expression: {
+                                type: "string",
+                                description: "The mathematical expression to evaluate"
+                            }
+                        },
+                        required: ["expression"]
+                    }
+                }
+            },
+            {
+                type: "function",
+                function: {
+                    name: "search_web",
+                    description: "Search the web for information",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            query: {
+                                type: "string",
+                                description: "The search query"
+                            },
+                            max_results: {
+                                type: "integer",
+                                description: "Maximum number of results to return",
+                                default: 5
+                            }
+                        },
+                        required: ["query"]
+                    }
+                }
+            },
+            {
+                type: "function",
+                function: {
+                    name: "analyze_code",
+                    description: "Analyze code for issues, improvements, or explanations",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            code: {
+                                type: "string",
+                                description: "The code to analyze"
+                            },
+                            language: {
+                                type: "string",
+                                description: "Programming language"
+                            },
+                            analysis_type: {
+                                type: "string",
+                                enum: ["bugs", "performance", "explanation", "improvements"],
+                                description: "Type of analysis to perform"
+                            }
+                        },
+                        required: ["code", "language"]
+                    }
+                }
+            }
+        ];
+
+        // Test Scenarios
+        const scenarios = {
+            weather: {
+                message: "What's the weather like in San Francisco and New York? Also, what's 25 celsius in fahrenheit?",
+                tools: ["get_weather", "calculate"]
+            },
+            math: {
+                message: "Calculate the following: (15 * 23) + (sqrt(144) / 3) - 7^2. Then tell me if the result is a prime number.",
+                tools: ["calculate"]
+            },
+            search: {
+                message: "Search for recent advancements in quantum computing and summarize the key findings.",
+                tools: ["search_web"]
+            },
+            reasoning: {
+                message: "A farmer has 15 apples. He gives 1/3 to his neighbor, eats 2 himself, then his daughter brings him 7 more. His son takes half of what's left. How many apples does the farmer have now? Think through this step by step.",
+                tools: []
+            },
+            "multi-tool": {
+                message: "Find the current weather in Tokyo, convert the temperature to fahrenheit if it's in celsius, then search for 'Tokyo weather patterns' to give me context about typical weather there.",
+                tools: ["get_weather", "calculate", "search_web"]
+            }
+        };
+
+        // State Management
+        let conversationHistory = [];
+        let isProcessing = false;
+        let currentScenario = null;
+        let lastApiRequest = null;  // Store the last API request (client-side)
+        let lastActualGlmRequest = null;  // Store the actual GLM request (server-side)
+        let currentAbortController = null;  // Track current request for cancellation
+        let waitingForFollowUp = false;  // Track if we're waiting for follow-up requests after tool calls
+
+        // DOM Elements
+        const chatArea = document.getElementById('chatArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const tempSlider = document.getElementById('tempSlider');
+        const tempValue = document.getElementById('tempValue');
+        const maxTokensSlider = document.getElementById('maxTokensSlider');
+        const maxTokensValue = document.getElementById('maxTokensValue');
+        const reasoningSelect = document.getElementById('reasoningSelect');
+        const streamToggle = document.getElementById('streamToggle');
+        const toolStreamToggle = document.getElementById('toolStreamToggle');
+        const showTokenUsageToggle = document.getElementById('showTokenUsageToggle');
+        const serverStatus = document.getElementById('serverStatus');
+        const streamingStatus = document.getElementById('streamingStatus');
+        const toolsStatus = document.getElementById('toolsStatus');
+        const toolsList = document.getElementById('toolsList');
+        const systemPromptTextarea = document.getElementById('systemPrompt');
+
+        // Initialize UI
+        function initializeUI() {
+            // Temperature slider
+            tempSlider.addEventListener('input', (e) => {
+                const temp = (e.target.value / 100).toFixed(1);
+                tempValue.textContent = temp;
+            });
+
+            // Max tokens slider
+            maxTokensSlider.addEventListener('input', (e) => {
+                maxTokensValue.textContent = e.target.value;
+            });
+
+            // Message input auto-resize
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = messageInput.scrollHeight + 'px';
+            });
+
+            // Handle Enter key
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Handle send button click
+            sendButton.addEventListener('click', () => {
+                if (isProcessing) {
+                    stopGeneration();
+                } else {
+                    sendMessage();
+                }
+            });
+
+            // Scenario buttons
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const scenario = btn.dataset.scenario;
+                    loadScenario(scenario);
+                });
+            });
+
+            // System prompt character counter
+            systemPromptTextarea.addEventListener('input', () => {
+                const charCount = systemPromptTextarea.value.length;
+                document.getElementById('systemPromptCharCount').textContent = `${charCount} chars`;
+            });
+
+            // Token usage toggle - persist to localStorage
+            const savedTokenUsagePref = localStorage.getItem('showTokenUsage');
+            if (savedTokenUsagePref !== null) {
+                showTokenUsageToggle.checked = savedTokenUsagePref === 'true';
+            }
+
+            // Apply initial state to any existing badges
+            updateTokenUsageVisibility();
+
+            showTokenUsageToggle.addEventListener('change', () => {
+                localStorage.setItem('showTokenUsage', showTokenUsageToggle.checked);
+                console.log('[TOKEN USAGE] Display toggled:', showTokenUsageToggle.checked);
+                updateTokenUsageVisibility();
+            });
+
+            // Display available tools
+            displayTools();
+
+            // Check server health
+            checkServerHealth();
+            setInterval(checkServerHealth, 5000);
+        }
+
+
+        // Display available tools
+        function displayTools() {
+            toolsList.innerHTML = '';
+            availableTools.forEach(tool => {
+                const toolItem = document.createElement('div');
+                toolItem.className = 'tool-item';
+                toolItem.innerHTML = `
+                    <div class="tool-name">${tool.function.name}</div>
+                    <div class="tool-description">${tool.function.description}</div>
+                `;
+                toolsList.appendChild(toolItem);
+            });
+        }
+
+        // Check server health
+        async function checkServerHealth() {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                if (response.ok) {
+                    serverStatus.classList.add('active');
+                } else {
+                    serverStatus.classList.remove('active');
+                }
+            } catch (error) {
+                serverStatus.classList.remove('active');
+            }
+        }
+
+        // Load scenario
+        function loadScenario(scenarioName) {
+            const scenario = scenarios[scenarioName];
+            if (!scenario) return;
+
+            // Update active scenario button
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.scenario === scenarioName);
+            });
+
+            currentScenario = scenarioName;
+            messageInput.value = scenario.message;
+            messageInput.style.height = 'auto';
+            messageInput.style.height = messageInput.scrollHeight + 'px';
+
+            // Update tools status
+            toolsStatus.classList.toggle('active', scenario.tools.length > 0);
+        }
+
+        // Create message element
+        function createMessageElement(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            // Use the safe formatting function
+            contentDiv.innerHTML = formatMessageContent(content);
+
+            messageDiv.appendChild(contentDiv);
+
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            return { messageDiv, contentDiv };
+        }
+
+        // Create reasoning display
+        function createReasoningDisplay() {
+            const container = document.createElement('div');
+            container.className = 'reasoning-container';
+
+            container.innerHTML = `
+                <div class="reasoning-header">
+                    <div class="reasoning-icon">🧠</div>
+                    <span>Reasoning Process</span>
+                </div>
+                <div class="reasoning-content"></div>
+            `;
+
+            const header = container.querySelector('.reasoning-header');
+            const content = container.querySelector('.reasoning-content');
+
+            header.addEventListener('click', () => {
+                content.classList.toggle('collapsed');
+            });
+
+            chatArea.appendChild(container);
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            // Return both content and container
+            return { content, container };
+        }
+
+        // Create tool call display
+        function createToolCallDisplay(toolName, toolId, afterElement = null) {
+            const container = document.createElement('div');
+            container.className = 'tool-call-container';
+
+            container.innerHTML = `
+                <div class="tool-call-header">
+                    <div class="tool-icon">🛠️</div>
+                    <span>Tool Call: ${toolName}</span>
+                </div>
+                <div class="tool-call-content">
+                    <div class="tool-function">${toolName}()</div>
+                    <div class="tool-arguments"></div>
+                </div>
+            `;
+
+            // Insert after specified element or at the end
+            if (afterElement) {
+                afterElement.insertAdjacentElement('afterend', container);
+            } else {
+                chatArea.appendChild(container);
+            }
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            return {
+                container,
+                argumentsDiv: container.querySelector('.tool-arguments')
+            };
+        }
+
+        // Get simulated tool result
+        function getSimulatedToolResult(toolCall) {
+            switch (toolCall.function.name) {
+                case 'get_weather':
+                    const location = JSON.parse(toolCall.function.arguments).location;
+                    return `Current weather in ${location}:
+Temperature: 72°F (22°C)
+Conditions: Partly cloudy
+Humidity: 65%
+Wind: 10 mph NW`;
+
+                case 'calculate':
+                    try {
+                        const expr = JSON.parse(toolCall.function.arguments).expression;
+                        // Add Math functions to the expression
+                        const mathExpr = expr
+                            .replace(/\^/g, '**')
+                            .replace(/sqrt/g, 'Math.sqrt')
+                            .replace(/sin/g, 'Math.sin')
+                            .replace(/cos/g, 'Math.cos')
+                            .replace(/tan/g, 'Math.tan')
+                            .replace(/log/g, 'Math.log')
+                            .replace(/abs/g, 'Math.abs')
+                            .replace(/floor/g, 'Math.floor')
+                            .replace(/ceil/g, 'Math.ceil')
+                            .replace(/round/g, 'Math.round');
+                        const result = eval(mathExpr);
+                        return `Result: ${result}`;
+                    } catch (e) {
+                        return `Calculation error: ${e.message}`;
+                    }
+
+                case 'search_web':
+                    const query = JSON.parse(toolCall.function.arguments).query;
+                    const lowerQuery = query.toLowerCase();
+
+                    // Generate relevant fake search results based on query keywords
+                    if (lowerQuery.includes('weather') || lowerQuery.includes('climate')) {
+                        return `Search results for "${query}":
+1. Understanding ${query.match(/\w+(?=\s+weather)/i)?.[0] || 'regional'} climate patterns - comprehensive analysis of seasonal variations, precipitation, and temperature trends
+2. Historical weather data shows ${query.match(/\w+(?=\s+weather)/i)?.[0] || 'this region'} experiences distinct seasonal patterns with moderate temperatures year-round
+3. Climate research indicates ${query.match(/\w+(?=\s+weather)/i)?.[0] || 'the area'}'s weather is influenced by oceanic currents and geographical positioning`;
+                    } else if (lowerQuery.includes('tokyo') || lowerQuery.includes('japan')) {
+                        return `Search results for "${query}":
+1. Tokyo experiences a humid subtropical climate with hot summers and mild winters, average annual temperature of 15.4°C (59.7°F)
+2. Best times to visit Tokyo: Spring (March-May) for cherry blossoms and Fall (September-November) for comfortable weather
+3. Tokyo weather patterns show significant rainfall during June-July monsoon season, with typhoons possible in late summer`;
+                    } else if (lowerQuery.includes('quantum') || lowerQuery.includes('computing')) {
+                        return `Search results for "${query}":
+1. Recent breakthrough in quantum computing achieved by researchers at leading institutions
+2. Quantum supremacy demonstrated on new hardware platforms showing exponential speedup
+3. New quantum algorithms show promise for optimization problems in cryptography and drug discovery`;
+                    } else if (lowerQuery.includes('price') || lowerQuery.includes('cost') || lowerQuery.includes('$')) {
+                        return `Search results for "${query}":
+1. Current market analysis shows ${query.split(' ').find(w => w.length > 3) || 'product'} pricing ranges from competitive to premium tiers
+2. Price comparison reveals best deals on ${query.split(' ').find(w => w.length > 3) || 'items'} with seasonal variations
+3. Historical pricing data indicates steady market trends with occasional promotional periods`;
+                    } else if (lowerQuery.includes('how to') || lowerQuery.includes('tutorial')) {
+                        return `Search results for "${query}":
+1. Step-by-step guide: ${query.replace('how to ', '').replace('tutorial', '')} - beginner to advanced techniques
+2. Video tutorials and written guides for ${query.split(' ').slice(-3).join(' ')} with practical examples
+3. Expert tips and best practices for ${query.split(' ').slice(-3).join(' ')} commonly used by professionals`;
+                    } else {
+                        // Generic but query-aware results
+                        const keywords = query.split(' ').filter(w => w.length > 3).slice(0, 3);
+                        return `Search results for "${query}":
+1. Comprehensive overview of ${keywords[0] || 'topic'} - latest research and developments in ${keywords.slice(0, 2).join(' and ')}
+2. Expert analysis: ${keywords.slice(0, 2).join(' ')} showing significant trends and emerging patterns
+3. Recent studies on ${query.slice(0, 50)} reveal important insights for understanding the broader context`;
+                    }
+
+
+                default:
+                    return `Tool ${toolCall.function.name} executed successfully`;
+            }
+        }
+
+        // Send tool results back for final response
+        async function sendToolResultsForFinalResponse(originalRequest, assistantContent, toolCalls, toolResults) {
+            console.log('[FOLLOW-UP] Making follow-up request');
+            console.log('[FOLLOW-UP] Assistant content:', assistantContent);
+            console.log('[FOLLOW-UP] Tool calls:', toolCalls);
+            console.log('[FOLLOW-UP] Tool results:', toolResults);
+
+            let finalRequest;
+
+            // Check if this is a recursive call (toolCalls is empty array means messages already built)
+            if (toolCalls && toolCalls.length === 0 && toolResults && toolResults.length === 0) {
+                // Recursive call - messages already built in originalRequest
+                console.log('[FOLLOW-UP] Recursive call detected, using pre-built messages');
+                finalRequest = originalRequest;
+            } else {
+                // Normal call - need to build assistant message + tool results
+                // Construct proper assistant message with tool_calls
+                const assistantMessage = {
+                    role: "assistant",
+                    content: assistantContent || null,
+                    tool_calls: toolCalls
+                };
+
+                // Add assistant message with tool_calls, then tool results
+                const updatedMessages = [
+                    ...originalRequest.messages,
+                    assistantMessage,
+                    ...toolResults
+                ];
+
+                console.log('[FOLLOW-UP] Updated messages:', updatedMessages.length, 'messages total');
+                console.log('[FOLLOW-UP] Last 3 messages:', updatedMessages.slice(-3));
+
+                // Make new request for final response
+                finalRequest = {
+                    ...originalRequest,
+                    messages: updatedMessages
+                };
+            }
+
+            try {
+                console.log('[FOLLOW-UP] About to fetch...');
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(finalRequest),
+                    signal: currentAbortController?.signal
+                });
+
+                console.log('[FOLLOW-UP] Response received:', {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Handle the final streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let finalContent = '';
+                let finalReasoningContent = '';
+                let contentDiv = null;
+                let reasoningDiv = null;
+                let reasoningContainer = null;
+                let followUpToolCalls = {};  // Track tool calls in follow-up
+                let lastFollowUpToolContainer = null;
+                let scheduledRecursiveCall = false;  // Track if we schedule another recursive call
+                let usage = null;  // Track usage data from backend
+
+                console.log('[FOLLOW-UP] Starting to read stream...');
+                let chunkCount = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    chunkCount++;
+                    console.log('[FOLLOW-UP] Read chunk', chunkCount, 'done:', done, 'value length:', value?.length);
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    console.log('[FOLLOW-UP] Processing', lines.length, 'lines from chunk');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                console.log('[FOLLOW-UP] Got [DONE] marker');
+                                continue;
+                            }
+
+                            try {
+                                const json = JSON.parse(data);
+
+                                // Capture usage data if present (sent before [DONE])
+                                if (json.usage && json.choices && json.choices.length === 0) {
+                                    usage = json.usage;
+                                    console.log('[FOLLOW-UP] [USAGE] Received usage data from backend:', usage);
+                                    continue;  // Skip to next line, this chunk has no delta
+                                }
+
+                                const delta = json.choices[0].delta;
+
+                                console.log('[FOLLOW-UP] Delta:', {
+                                    content: delta.content,
+                                    reasoning: delta.reasoning_content !== undefined,
+                                    tool_calls: delta.tool_calls !== undefined,
+                                    finish: json.choices[0].finish_reason
+                                });
+
+                                // Handle reasoning content in follow-up
+                                if (delta.reasoning_content !== undefined && delta.reasoning_content !== null && delta.reasoning_content !== '') {
+                                    finalReasoningContent += delta.reasoning_content;
+
+                                    if (!reasoningDiv) {
+                                        // Remove loading indicator if present
+                                        const loadingIndicator = document.getElementById('followup-loading');
+                                        if (loadingIndicator) {
+                                            loadingIndicator.remove();
+                                        }
+
+                                        const reasoningDisplay = createReasoningDisplay();
+                                        reasoningDiv = reasoningDisplay.content;
+                                        reasoningContainer = reasoningDisplay.container;
+                                        console.log('[FOLLOW-UP] Created reasoning display');
+                                    }
+
+                                    reasoningDiv.textContent = finalReasoningContent;
+                                    reasoningDiv.scrollTop = reasoningDiv.scrollHeight;
+                                    chatArea.scrollTop = chatArea.scrollHeight;
+                                }
+
+                                // Handle content for final response
+                                if (delta.content && delta.content !== null) {
+                                    finalContent += delta.content;
+                                    console.log('[FOLLOW-UP] Accumulated content length:', finalContent.length);
+
+                                    // Only create element when we have actual content
+                                    if (!contentDiv && finalContent.trim()) {
+                                        // Remove loading indicator if present (might have been removed by reasoning already)
+                                        const loadingIndicator = document.getElementById('followup-loading');
+                                        if (loadingIndicator) {
+                                            loadingIndicator.remove();
+                                        }
+
+                                        const elements = createMessageElement('assistant', '');
+                                        contentDiv = elements.contentDiv;
+                                        console.log('[FOLLOW-UP] Created content div');
+                                    }
+
+                                    // Update content if div exists
+                                    if (contentDiv) {
+                                        // Use the safe formatting function
+                                        contentDiv.innerHTML = formatMessageContent(finalContent);
+                                        chatArea.scrollTop = chatArea.scrollHeight;
+                                    }
+                                }
+
+                                // Handle tool calls in follow-up (recursive tool calling)
+                                if (delta.tool_calls) {
+                                    console.log('[FOLLOW-UP] Processing tool_calls:', delta.tool_calls);
+                                    for (const toolCall of delta.tool_calls) {
+                                        const idx = toolCall.index;
+
+                                        if (!followUpToolCalls[idx]) {
+                                            followUpToolCalls[idx] = {
+                                                id: toolCall.id,
+                                                type: toolCall.type,
+                                                function: { name: '', arguments: '' }
+                                            };
+                                        }
+
+                                        if (toolCall.id) {
+                                            followUpToolCalls[idx].id = toolCall.id;
+                                        }
+
+                                        if (toolCall.function) {
+                                            if (toolCall.function.name) {
+                                                followUpToolCalls[idx].function.name = toolCall.function.name;
+                                                // Create tool display when we know the name
+                                                if (!followUpToolCalls[idx].display) {
+                                                    // Remove loading indicator if present (for recursive tool calls)
+                                                    const loadingIndicator = document.getElementById('followup-loading');
+                                                    if (loadingIndicator) {
+                                                        loadingIndicator.remove();
+                                                    }
+
+                                                    const afterElement = lastFollowUpToolContainer || contentDiv?.parentElement;
+                                                    const display = createToolCallDisplay(
+                                                        toolCall.function.name,
+                                                        followUpToolCalls[idx].id,
+                                                        afterElement
+                                                    );
+                                                    followUpToolCalls[idx].display = display;
+                                                    lastFollowUpToolContainer = display.container;
+                                                    console.log('[FOLLOW-UP] Created tool display for', toolCall.function.name);
+                                                }
+                                            }
+                                            if (toolCall.function.arguments) {
+                                                followUpToolCalls[idx].function.arguments += toolCall.function.arguments;
+                                                // Update arguments display
+                                                if (followUpToolCalls[idx].display) {
+                                                    followUpToolCalls[idx].display.argumentsDiv.textContent =
+                                                        followUpToolCalls[idx].function.arguments;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Handle finish reason for follow-up
+                                if (json.choices[0].finish_reason === 'tool_calls') {
+                                    console.log('[FOLLOW-UP] Got finish_reason=tool_calls, need another round!');
+                                    // Collect and display tool results
+                                    const moreToolResults = [];
+                                    for (const idx in followUpToolCalls) {
+                                        const toolCall = followUpToolCalls[idx];
+                                        if (toolCall.display && toolCall.function.arguments) {
+                                            // Show visual response
+                                            simulateToolResponse(toolCall, toolCall.display.container);
+
+                                            // Collect tool results
+                                            const result = getSimulatedToolResult(toolCall);
+                                            moreToolResults.push({
+                                                tool_call_id: toolCall.id,
+                                                role: "tool",
+                                                name: toolCall.function.name,
+                                                content: result
+                                            });
+                                        }
+                                    }
+
+                                    if (moreToolResults.length > 0) {
+                                        console.log('[FOLLOW-UP RECURSIVE] Got', moreToolResults.length, 'more tool results, making another request...');
+
+                                        // Format the follow-up tool calls
+                                        const formattedFollowUpToolCalls = Object.keys(followUpToolCalls).map(idx => ({
+                                            id: followUpToolCalls[idx].id,
+                                            type: "function",
+                                            function: {
+                                                name: followUpToolCalls[idx].function.name,
+                                                arguments: followUpToolCalls[idx].function.arguments
+                                            }
+                                        }));
+
+                                        // Make ANOTHER recursive call with these tool results
+                                        // Need to update the conversation with the assistant's response that had tool calls
+                                        const recursiveRequest = {
+                                            ...finalRequest,
+                                            messages: [
+                                                ...finalRequest.messages,
+                                                {
+                                                    role: "assistant",
+                                                    content: finalContent || null,
+                                                    tool_calls: formattedFollowUpToolCalls
+                                                },
+                                                ...moreToolResults
+                                            ]
+                                        };
+
+                                        console.log('[FOLLOW-UP RECURSIVE] Updated messages:', recursiveRequest.messages.length, 'messages');
+
+                                        // Mark that we're scheduling a recursive call
+                                        scheduledRecursiveCall = true;
+
+                                        // Add loading indicator for recursive call
+                                        const recursiveLoadingDiv = document.createElement('div');
+                                        recursiveLoadingDiv.className = 'message assistant';
+                                        recursiveLoadingDiv.id = 'followup-loading';
+                                        recursiveLoadingDiv.innerHTML = `
+                                            <div class="message-content">
+                                                <div class="typing-indicator">
+                                                    <div class="typing-dot"></div>
+                                                    <div class="typing-dot"></div>
+                                                    <div class="typing-dot"></div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        chatArea.appendChild(recursiveLoadingDiv);
+                                        chatArea.scrollTop = chatArea.scrollHeight;
+
+                                        // Call recursively after a delay
+                                        setTimeout(async () => {
+                                            await sendToolResultsForFinalResponse(recursiveRequest, '', [], []);
+                                        }, 1000);
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('[FOLLOW-UP] Parse error in final response:', e, 'Data:', data);
+                            }
+                        }
+                    }
+                }
+
+                console.log('[FOLLOW-UP] Stream complete. Final content length:', finalContent.length);
+
+                // Clean up empty reasoning container if no reasoning was actually present
+                if (reasoningContainer && !finalReasoningContent.trim()) {
+                    reasoningContainer.remove();
+                    console.log('[FOLLOW-UP] Removed empty reasoning container');
+                }
+
+                // Display token usage if available
+                if (usage && contentDiv && contentDiv.parentElement) {
+                    displayTokenUsage(usage, contentDiv.parentElement);
+                }
+
+                // Add final response to conversation history
+                if (finalContent) {
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: finalContent
+                    });
+                    console.log('[FOLLOW-UP] Added to conversation history');
+                } else {
+                    console.log('[FOLLOW-UP] No content to add to history');
+                }
+
+                // Reset state after follow-up completes (only if NOT scheduling another recursive call)
+                if (!scheduledRecursiveCall) {
+                    console.log('[FOLLOW-UP] Resetting state - follow-up complete');
+                    waitingForFollowUp = false;
+                    isProcessing = false;
+                    sendButton.textContent = 'Send';
+                    sendButton.disabled = false;
+                    streamingStatus.classList.remove('active');
+                    currentScenario = null;
+                    toolsStatus.classList.remove('active');
+                    currentAbortController = null;
+                } else {
+                    console.log('[FOLLOW-UP] NOT resetting state - recursive call scheduled');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('[FOLLOW-UP] Request was aborted');
+                } else {
+                    console.error('[FOLLOW-UP] Error getting final response:', error);
+                    console.error('[FOLLOW-UP] Error stack:', error.stack);
+                    createMessageElement('assistant', `Error getting final response: ${error.message}`);
+                }
+
+                // Reset state on error
+                waitingForFollowUp = false;
+                isProcessing = false;
+                sendButton.textContent = 'Send';
+                sendButton.disabled = false;
+                streamingStatus.classList.remove('active');
+                currentScenario = null;
+                toolsStatus.classList.remove('active');
+                currentAbortController = null;
+            }
+        }
+
+        // Stop generation
+        function stopGeneration() {
+            console.log('[STOP] Stopping generation...');
+            if (currentAbortController) {
+                currentAbortController.abort();
+                currentAbortController = null;
+            }
+
+            // Remove any loading indicators
+            const loadingIndicator = document.getElementById('followup-loading');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+
+            // Reset state
+            waitingForFollowUp = false;
+            isProcessing = false;
+            sendButton.textContent = 'Send';
+            sendButton.disabled = false;
+            streamingStatus.classList.remove('active');
+
+            // Add a system message indicating generation was stopped
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.innerHTML = `
+                <div class="message-content" style="opacity: 0.7; font-style: italic;">
+                    Generation stopped by user.
+                </div>
+            `;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Update visibility of all token usage badges
+        function updateTokenUsageVisibility() {
+            const allUsageBadges = document.querySelectorAll('.token-usage');
+            const isVisible = showTokenUsageToggle.checked;
+
+            allUsageBadges.forEach(badge => {
+                if (isVisible) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+
+            console.log(`[TOKEN USAGE] ${isVisible ? 'Showing' : 'Hiding'} ${allUsageBadges.length} badge(s)`);
+        }
+
+        // Display token usage badge
+        function displayTokenUsage(usage, messageContainer) {
+            if (!usage || !messageContainer) return;
+
+            const usageDiv = document.createElement('div');
+            usageDiv.className = 'token-usage';
+
+            // Apply hidden class if toggle is off
+            if (!showTokenUsageToggle.checked) {
+                usageDiv.classList.add('hidden');
+            }
+
+            usageDiv.innerHTML = `
+                <span class="token-usage-item">
+                    <span class="token-usage-label">Prompt:</span>
+                    <span class="token-usage-value">${usage.prompt_tokens || 0}</span>
+                </span>
+                <span class="token-usage-item">
+                    <span class="token-usage-label">Completion:</span>
+                    <span class="token-usage-value">${usage.completion_tokens || 0}</span>
+                </span>
+                <span class="token-usage-item">
+                    <span class="token-usage-label">Total:</span>
+                    <span class="token-usage-value">${usage.total_tokens || 0}</span>
+                </span>
+            `;
+
+            // Find the message content div and append usage after it
+            const contentDiv = messageContainer.querySelector('.message-content');
+            if (contentDiv) {
+                contentDiv.appendChild(usageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight;
+                console.log('[USAGE] Token usage badge created (visible:', showTokenUsageToggle.checked + ')');
+            }
+        }
+
+        // Simulate tool response
+        function simulateToolResponse(toolCall, container) {
+            const responseDiv = document.createElement('div');
+            responseDiv.className = 'tool-response';
+
+            const responseContent = getSimulatedToolResult(toolCall);
+
+            responseDiv.innerHTML = `
+                <div class="tool-response-header">Tool Response</div>
+                <div class="tool-response-content">${responseContent}</div>
+            `;
+
+            container.querySelector('.tool-call-content').appendChild(responseDiv);
+
+            // Scroll to keep the tool response visible
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Send message
+        async function sendMessage() {
+            if (isProcessing || !messageInput.value.trim()) return;
+
+            const message = messageInput.value.trim();
+
+            isProcessing = true;
+            sendButton.textContent = 'Stop';
+            sendButton.disabled = false;  // Keep enabled so it can be clicked to stop
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Create abort controller for this request
+            currentAbortController = new AbortController();
+
+            // Get settings
+            const temperature = parseFloat(tempSlider.value) / 100;
+            const maxTokens = parseInt(maxTokensSlider.value);
+            const stream = streamToggle.checked;
+            const toolStream = toolStreamToggle.checked;
+            const reasoningEffort = reasoningSelect.value || undefined;
+
+            // Add user message to UI and history (without /nothink)
+            createMessageElement('user', message);
+            conversationHistory.push({ role: 'user', content: message });
+
+            // Determine which tools to include
+            let tools = null;
+            if (currentScenario && scenarios[currentScenario].tools.length > 0) {
+                tools = availableTools.filter(t =>
+                    scenarios[currentScenario].tools.includes(t.function.name)
+                );
+            }
+
+            // Build request
+            const request = {
+                model: 'glm-4.6',
+                messages: [
+                    {
+                        role: "system",
+                        content: systemPromptTextarea.value.trim()
+                    },
+                    ...conversationHistory.slice(0, -1), // All previous messages
+                    {
+                        role: "user",
+                        content: message // Server automatically handles thinking suppression
+                    }
+                ],
+                temperature: temperature,
+                max_tokens: maxTokens,
+                stream: stream
+            };
+
+            if (reasoningEffort) {
+                request.reasoning_effort = reasoningEffort;
+            }
+
+            if (tools && tools.length > 0) {
+                request.tools = tools;
+                request.tool_choice = "auto";
+                if (toolStream && stream) {
+                    request.tool_stream = true;
+                }
+            }
+
+            // Store this request as the last API request
+            lastApiRequest = JSON.parse(JSON.stringify(request));
+
+            streamingStatus.classList.add('active');
+
+            try {
+                if (stream) {
+                    await handleStreamingResponse(request, currentAbortController.signal);
+                } else {
+                    await handleNonStreamingResponse(request, currentAbortController.signal);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Request was aborted');
+                } else {
+                    console.error('Error:', error);
+                    createMessageElement('assistant', `Error: ${error.message}`);
+                }
+            } finally {
+                // Only reset state if we're not waiting for a follow-up request
+                if (!waitingForFollowUp) {
+                    isProcessing = false;
+                    sendButton.textContent = 'Send';
+                    sendButton.disabled = false;
+                    streamingStatus.classList.remove('active');
+                    currentScenario = null;
+                    toolsStatus.classList.remove('active');
+                    currentAbortController = null;
+                }
+            }
+        }
+
+        // Handle streaming response
+        async function handleStreamingResponse(request, signal) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(request),
+                signal: signal
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            let assistantContent = '';
+            let reasoningContent = '';
+            let contentDiv = null;
+            let reasoningDiv = null;
+            let reasoningContainer = null;
+            let messageContainer = null;
+            let toolCalls = {};
+            let lastToolContainer = null;
+            let hasStartedReasoning = false;
+            let hasStartedContent = false;
+            let reasoningComplete = false;
+            let lastReasoningChunk = null;
+            let usage = null;  // Track usage data from backend
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') continue;
+
+                        try {
+                            const json = JSON.parse(data);
+
+                            // Capture actual GLM request if present (first chunk from server)
+                            if (json.actual_glm_request) {
+                                lastActualGlmRequest = json.actual_glm_request;
+                                console.log('[ACTUAL GLM REQUEST]', lastActualGlmRequest);
+                            }
+
+                            // Capture usage data if present (sent before [DONE])
+                            if (json.usage && json.choices && json.choices.length === 0) {
+                                usage = json.usage;
+                                console.log('[USAGE] Received usage data from backend:', usage);
+                                continue;  // Skip to next line, this chunk has no delta
+                            }
+
+                            const delta = json.choices[0].delta;
+
+                            // Log delta structure to understand flow
+                            if (delta.reasoning_content !== undefined || delta.content !== undefined || delta.tool_calls !== undefined) {
+                                const flowLog = {
+                                    reasoning: delta.reasoning_content !== undefined ? 'present' : 'absent',
+                                    content: delta.content,
+                                    finish: json.choices[0].finish_reason
+                                };
+
+                                // Add detailed tool_calls info
+                                if (delta.tool_calls) {
+                                    flowLog.tool_calls = delta.tool_calls.map(tc => ({
+                                        index: tc.index,
+                                        id: tc.id,
+                                        name: tc.function?.name,
+                                        args_chunk: tc.function?.arguments
+                                    }));
+                                }
+
+                                console.log('[FLOW]', flowLog);
+                            }
+
+                            // Handle reasoning content
+                            if (delta.reasoning_content !== undefined && delta.reasoning_content !== null && delta.reasoning_content !== '') {
+                                hasStartedReasoning = true;
+                                reasoningContent += delta.reasoning_content;
+
+                                if (!reasoningDiv) {
+                                    const reasoningDisplay = createReasoningDisplay();
+                                    reasoningDiv = reasoningDisplay.content;
+                                    reasoningContainer = reasoningDisplay.container;
+                                }
+
+                                reasoningDiv.textContent = reasoningContent;
+
+                                // Scroll both the reasoning container AND the main chat area
+                                reasoningDiv.scrollTop = reasoningDiv.scrollHeight;
+                                chatArea.scrollTop = chatArea.scrollHeight;
+                            }
+
+                            // Check if reasoning has transitioned from active to complete
+                            // Reasoning is complete when we start receiving content after reasoning started
+                            if (hasStartedReasoning && !reasoningComplete && delta.content !== undefined && delta.content !== null && delta.content !== '') {
+                                reasoningComplete = true;
+                                console.log('[REASONING COMPLETE] Content started after reasoning');
+                            }
+
+                            // Handle content BEFORE tool calls
+                            if (delta.content !== undefined && delta.content !== null) {
+                                assistantContent += delta.content;
+
+                                // Mark that content has started if we have meaningful content
+                                if (assistantContent.trim()) {
+                                    hasStartedContent = true;
+                                }
+
+                                // Create content div on FIRST content chunk (even if just whitespace)
+                                // when reasoning mode is enabled and reasoning has started
+                                if (!contentDiv && hasStartedReasoning && request.reasoning_effort) {
+                                    console.log('[CONTENT DIV] Creating after reasoning, content so far:', assistantContent.length, 'chars');
+                                    const messageDiv = document.createElement('div');
+                                    messageDiv.className = `message assistant`;
+
+                                    contentDiv = document.createElement('div');
+                                    contentDiv.className = 'message-content';
+
+                                    messageDiv.appendChild(contentDiv);
+                                    messageContainer = messageDiv;
+
+                                    // ALWAYS insert content after reasoning, BEFORE tools
+                                    // Don't use lastToolContainer here - content should appear before tools
+                                    if (reasoningContainer) {
+                                        reasoningContainer.insertAdjacentElement('afterend', messageDiv);
+                                    } else {
+                                        chatArea.appendChild(messageDiv);
+                                    }
+                                }
+
+                                // For non-reasoning mode, create div when we have trimmed content
+                                if (!contentDiv && !request.reasoning_effort && assistantContent.trim()) {
+                                    console.log('[CONTENT DIV] Creating for non-reasoning mode');
+                                    const messageDiv = document.createElement('div');
+                                    messageDiv.className = `message assistant`;
+
+                                    contentDiv = document.createElement('div');
+                                    contentDiv.className = 'message-content';
+
+                                    messageDiv.appendChild(contentDiv);
+                                    messageContainer = messageDiv;
+
+                                    chatArea.appendChild(messageDiv);
+                                }
+
+                                // Update content if div exists
+                                if (contentDiv) {
+                                    // Use the safe formatting function, trim leading whitespace
+                                    const trimmedContent = assistantContent.replace(/^\s+/, '');
+                                    contentDiv.innerHTML = formatMessageContent(trimmedContent);
+                                    chatArea.scrollTop = chatArea.scrollHeight;
+                                }
+                            }
+
+                            // Handle tool calls AFTER content
+                            if (delta.tool_calls) {
+                                for (const toolCall of delta.tool_calls) {
+                                    const idx = toolCall.index;
+
+                                    if (!toolCalls[idx]) {
+                                        toolCalls[idx] = {
+                                            id: toolCall.id,
+                                            type: toolCall.type,
+                                            function: { name: '', arguments: '' }
+                                        };
+                                    }
+
+                                    if (toolCall.id) {
+                                        toolCalls[idx].id = toolCall.id;
+                                    }
+
+                                    if (toolCall.function) {
+                                        if (toolCall.function.name) {
+                                            toolCalls[idx].function.name = toolCall.function.name;
+                                            // Create tool display when we know the name (ONLY if not already created)
+                                            if (!toolCalls[idx].display) {
+                                                // Place it after content (if exists), or last tool, or reasoning
+                                                const afterElement = lastToolContainer || messageContainer || reasoningContainer;
+                                                const display = createToolCallDisplay(
+                                                    toolCall.function.name,
+                                                    toolCalls[idx].id,
+                                                    afterElement
+                                                );
+                                                toolCalls[idx].display = display;
+                                                lastToolContainer = display.container;
+                                            }
+                                        }
+                                        if (toolCall.function.arguments) {
+                                            toolCalls[idx].function.arguments += toolCall.function.arguments;
+                                            // Update arguments display
+                                            if (toolCalls[idx].display) {
+                                                toolCalls[idx].display.argumentsDiv.textContent =
+                                                    toolCalls[idx].function.arguments;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Clean up empty reasoning container if /nothink was used
+                            if (json.choices[0].finish_reason && reasoningContainer && !reasoningContent.trim()) {
+                                reasoningContainer.remove();
+                                reasoningContainer = null;
+                                hasStartedReasoning = false;
+                            }
+
+                            // Clean up empty content div if reasoning mode created it but no content arrived
+                            if (json.choices[0].finish_reason === 'tool_calls' && contentDiv && !assistantContent.trim() && messageContainer) {
+                                console.log('[CLEANUP] Removing empty content div, no content arrived before tool_calls');
+                                messageContainer.remove();
+                                contentDiv = null;
+                                messageContainer = null;
+                            }
+
+                            // Handle finish reason
+                            if (json.choices[0].finish_reason === 'tool_calls') {
+                                // Simulate tool responses
+                                const toolResults = [];
+                                for (const idx in toolCalls) {
+                                    const toolCall = toolCalls[idx];
+                                    if (toolCall.display && toolCall.function.arguments) {
+                                        // Show visual response
+                                        simulateToolResponse(toolCall, toolCall.display.container);
+
+                                        // Collect tool results for next request
+                                        const result = getSimulatedToolResult(toolCall);
+                                        toolResults.push({
+                                            tool_call_id: toolCall.id,
+                                            role: "tool",
+                                            name: toolCall.function.name,
+                                            content: result
+                                        });
+                                    }
+                                }
+
+                                // Send tool results back to get final response
+                                if (toolResults.length > 0) {
+                                    console.log('[TOOL RESULTS] Sending', toolResults.length, 'tool results back to model');
+
+                                    // Convert toolCalls object to proper format for assistant message
+                                    const formattedToolCalls = Object.keys(toolCalls).map(idx => ({
+                                        id: toolCalls[idx].id,
+                                        type: "function",
+                                        function: {
+                                            name: toolCalls[idx].function.name,
+                                            arguments: toolCalls[idx].function.arguments
+                                        }
+                                    }));
+
+                                    // Mark that we're waiting for a follow-up request
+                                    waitingForFollowUp = true;
+
+                                    // Add loading indicator while waiting for follow-up response
+                                    const loadingDiv = document.createElement('div');
+                                    loadingDiv.className = 'message assistant';
+                                    loadingDiv.id = 'followup-loading';
+                                    loadingDiv.innerHTML = `
+                                        <div class="message-content">
+                                            <div class="typing-indicator">
+                                                <div class="typing-dot"></div>
+                                                <div class="typing-dot"></div>
+                                                <div class="typing-dot"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                    chatArea.appendChild(loadingDiv);
+                                    chatArea.scrollTop = chatArea.scrollHeight;
+
+                                    setTimeout(async () => {
+                                        await sendToolResultsForFinalResponse(request, assistantContent, formattedToolCalls, toolResults);
+                                    }, 1000);
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Parse error:', e);
+                        }
+                    }
+                }
+            }
+
+            // Display token usage if available
+            if (usage && messageContainer) {
+                displayTokenUsage(usage, messageContainer);
+            }
+
+            // Add to conversation history (trim to remove leading/trailing whitespace)
+            if (assistantContent) {
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: assistantContent.trim()
+                });
+            }
+        }
+
+        // Handle non-streaming response
+        async function handleNonStreamingResponse(request, signal) {
+            // Add loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message assistant';
+            loadingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(loadingDiv);
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(request),
+                signal: signal
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            loadingDiv.remove();
+
+            const assistantMessage = data.choices[0].message.content;
+            createMessageElement('assistant', assistantMessage);
+
+            conversationHistory.push({
+                role: 'assistant',
+                content: assistantMessage
+            });
+        }
+
+        // Reset system prompt to default
+        function resetSystemPrompt() {
+            const defaultPrompt = "You are a helpful AI assistant with access to tools. Use tools when appropriate to answer questions. Think step by step when reasoning is enabled.";
+            systemPromptTextarea.value = defaultPrompt;
+            document.getElementById('systemPromptCharCount').textContent = `${defaultPrompt.length} chars`;
+        }
+
+        // Set system prompt to predefined roles
+        function setSystemPrompt(role) {
+            const prompts = {
+                expert: "You are an expert AI assistant with deep knowledge across multiple domains. Provide detailed, accurate, and nuanced answers. Use tools when available to verify information. Show your reasoning process clearly.",
+                teacher: "You are a patient and encouraging teacher. Explain concepts clearly, break down complex topics into simple steps, and provide examples. Ask clarifying questions when needed. Guide the learning process rather than just giving answers.",
+                concise: "You are a concise AI assistant. Provide direct, brief answers without unnecessary elaboration. Get straight to the point while remaining accurate and helpful.",
+                creative: "You are a creative AI assistant with a vivid imagination. Think outside the box, offer innovative solutions, and explore unconventional approaches. Use colorful language and engage with ideas playfully while remaining helpful."
+            };
+
+            const selectedPrompt = prompts[role] || prompts.default;
+            systemPromptTextarea.value = selectedPrompt;
+            document.getElementById('systemPromptCharCount').textContent = `${selectedPrompt.length} chars`;
+        }
+
+        // =========================
+        // TOKENIZER
+        // =========================
+
+        // GLM tokenizer instance
+        let glmTokenizer = null;
+        let tokenizerLoading = false;
+        let tokenizerLoadPromise = null;
+
+        // Initialize the GLM tokenizer
+        async function initializeTokenizer() {
+            if (glmTokenizer) return glmTokenizer;
+
+            if (tokenizerLoading) {
+                // If already loading, return the existing promise
+                return tokenizerLoadPromise;
+            }
+
+            tokenizerLoading = true;
+            tokenizerLoadPromise = (async () => {
+                try {
+                    const response = await fetch('./glm45_tokenizer.json');
+                    const tokenizerData = await response.json();
+
+                    // Create encoder instance using the Encoder class from glm-tokenizer-standalone.js
+                    glmTokenizer = new Encoder(
+                        tokenizerData.vocab,
+                        tokenizerData.merges,
+                        tokenizerData.specialTokens,
+                        tokenizerData.config
+                    );
+
+                    console.log('[TOKENIZER] GLM-4.5/4.6 tokenizer initialized');
+                    console.log('[TOKENIZER] Total tokens in vocab:', glmTokenizer.totalTokens());
+
+                    return glmTokenizer;
+                } catch (error) {
+                    console.error('[TOKENIZER] Failed to initialize:', error);
+                    tokenizerLoading = false;
+                    tokenizerLoadPromise = null;
+                    throw error;
+                }
+            })();
+
+            return tokenizerLoadPromise;
+        }
+
+        // Count tokens in text using actual tokenizer
+        async function countTokens(text) {
+            try {
+                const tokenizer = await initializeTokenizer();
+                const tokens = tokenizer.encode(text);
+                return tokens.length;
+            } catch (error) {
+                console.error('[TOKENIZER] Error counting tokens:', error);
+                // Fallback to estimation
+                return Math.ceil(text.length / 4);
+            }
+        }
+
+        // Token counting helper function for request objects
+        async function estimateTokenCount(request) {
+            try {
+                let totalTokens = 0;
+
+                // Count tokens in messages
+                if (request.messages) {
+                    for (const msg of request.messages) {
+                        if (msg.role) {
+                            totalTokens += await countTokens(msg.role);
+                            totalTokens += 10; // Formatting overhead
+                        }
+                        if (msg.content) {
+                            totalTokens += await countTokens(msg.content);
+                        }
+                    }
+                }
+
+                // Count tokens in tools
+                if (request.tools && request.tools.length > 0) {
+                    const toolsJson = JSON.stringify(request.tools);
+                    totalTokens += await countTokens(toolsJson);
+                }
+
+                // Add overhead for other fields
+                totalTokens += 50; // System overhead
+
+                return totalTokens;
+            } catch (error) {
+                console.error('[TOKENIZER] Error estimating request tokens:', error);
+                // Fallback to simple estimation
+                let totalChars = 0;
+                if (request.messages) {
+                    for (const msg of request.messages) {
+                        if (msg.content) totalChars += msg.content.length;
+                        if (msg.role) totalChars += msg.role.length + 10;
+                    }
+                }
+                if (request.tools) {
+                    totalChars += JSON.stringify(request.tools).length;
+                }
+                return Math.ceil(totalChars / 4);
+            }
+        }
+
+        // Context Viewer Functions
+        async function showContextViewer() {
+            const modal = document.getElementById('contextModal');
+            const modalBody = document.getElementById('modalBody');
+
+            // Get current settings
+            const temperature = parseFloat(tempSlider.value) / 100;
+            const maxTokens = parseInt(maxTokensSlider.value);
+            const stream = streamToggle.checked;
+            const toolStream = toolStreamToggle.checked;
+            const reasoningEffort = reasoningSelect.value || undefined;
+
+            // Determine which tools would be included
+            let tools = null;
+            if (currentScenario && scenarios[currentScenario].tools.length > 0) {
+                tools = availableTools.filter(t =>
+                    scenarios[currentScenario].tools.includes(t.function.name)
+                );
+            }
+
+            // Build what the next request would look like
+            const nextRequest = {
+                model: 'glm-4.6',
+                messages: [
+                    {
+                        role: "system",
+                        content: systemPromptTextarea.value.trim()
+                    },
+                    ...conversationHistory,
+                    // Show placeholder for next message
+                    {
+                        role: "user",
+                        content: (messageInput.value.trim() || "[Next message will appear here]") + (!reasoningEffort && messageInput.value.trim() ? ' /nothink' : '')
+                    }
+                ],
+                temperature: temperature,
+                max_tokens: maxTokens,
+                stream: stream
+            };
+
+            if (reasoningEffort) {
+                nextRequest.reasoning_effort = reasoningEffort;
+            }
+
+            if (tools && tools.length > 0) {
+                nextRequest.tools = tools;
+                nextRequest.tool_choice = "auto";
+                if (toolStream && stream) {
+                    nextRequest.tool_stream = true;
+                }
+            }
+
+            // Build HTML content
+            let html = '';
+
+            // Client Request section
+            if (lastApiRequest) {
+                const clientTokens = await estimateTokenCount(lastApiRequest);
+                html += `
+                    <div class="context-section">
+                        <h3>📤 Client Request (What you sent)</h3>
+                        <pre>${JSON.stringify(lastApiRequest, null, 2)}</pre>
+                        <div class="context-stats">
+                            <div class="context-stat">
+                                <span>Messages:</span>
+                                <span class="context-stat-value">${lastApiRequest.messages.length}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Tokens:</span>
+                                <span class="context-stat-value">${clientTokens}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Temperature:</span>
+                                <span class="context-stat-value">${lastApiRequest.temperature}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Max Tokens:</span>
+                                <span class="context-stat-value">${lastApiRequest.max_tokens}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Tools:</span>
+                                <span class="context-stat-value">${lastApiRequest.tools ? lastApiRequest.tools.length : 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="context-section">
+                        <h3>📤 Client Request</h3>
+                        <p style="color: #888; font-style: italic;">No API calls made yet</p>
+                    </div>
+                `;
+            }
+
+            // Actual GLM Request section
+            if (lastActualGlmRequest) {
+                const glmTokens = await estimateTokenCount(lastActualGlmRequest);
+                html += `
+                    <div class="context-section">
+                        <h3>🔄 Actual GLM Request (What server sent to GLM)</h3>
+                        <pre>${JSON.stringify(lastActualGlmRequest, null, 2)}</pre>
+                        <div class="context-stats">
+                            <div class="context-stat">
+                                <span>Messages:</span>
+                                <span class="context-stat-value">${lastActualGlmRequest.messages.length}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Tokens:</span>
+                                <span class="context-stat-value">${glmTokens}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Reasoning Effort:</span>
+                                <span class="context-stat-value">${lastActualGlmRequest.reasoning_effort || 'None'}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Stop Tokens:</span>
+                                <span class="context-stat-value">${lastActualGlmRequest.stop ? lastActualGlmRequest.stop.length : 0}</span>
+                            </div>
+                            <div class="context-stat">
+                                <span>Tools:</span>
+                                <span class="context-stat-value">${lastActualGlmRequest.tools ? lastActualGlmRequest.tools.length : 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="context-section">
+                        <h3>🔄 Actual GLM Request</h3>
+                        <p style="color: #888; font-style: italic;">No streaming data captured yet</p>
+                    </div>
+                `;
+            }
+
+            // Next API Call section
+            const nextTokens = await estimateTokenCount(nextRequest);
+            html += `
+                <div class="context-section">
+                    <h3>📥 Next API Call (Preview)</h3>
+                    <pre>${JSON.stringify(nextRequest, null, 2)}</pre>
+                    <div class="context-stats">
+                        <div class="context-stat">
+                            <span>Messages:</span>
+                            <span class="context-stat-value">${nextRequest.messages.length}</span>
+                        </div>
+                        <div class="context-stat">
+                            <span>Tokens:</span>
+                            <span class="context-stat-value">${nextTokens}</span>
+                        </div>
+                        <div class="context-stat">
+                            <span>Temperature:</span>
+                            <span class="context-stat-value">${nextRequest.temperature}</span>
+                        </div>
+                        <div class="context-stat">
+                            <span>Max Tokens:</span>
+                            <span class="context-stat-value">${nextRequest.max_tokens}</span>
+                        </div>
+                        <div class="context-stat">
+                            <span>Tools:</span>
+                            <span class="context-stat-value">${nextRequest.tools ? nextRequest.tools.length : 0}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        function closeContextModal(event) {
+            // Close modal when clicking overlay or close button
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('contextModal').style.display = 'none';
+            }
+        }
+
+        // Format text content for display with proper structure
+        function formatMessageContent(content) {
+            // First escape HTML to prevent XSS
+            const escaped = content
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            // Then add formatting
+            return escaped
+                .split('\n\n') // Split by double newlines (paragraphs)
+                .map(paragraph => {
+                    if (paragraph.trim()) {
+                        // Replace single newlines with <br> within paragraphs
+                        return '<p>' + paragraph.replace(/\n/g, '<br>') + '</p>';
+                    }
+                    return '';
+                })
+                .filter(p => p) // Remove empty paragraphs
+                .join('');
+        }
+
+        // Initialize the app
+        initializeUI();
+
+        // Initialize tokenizer in the background
+        initializeTokenizer().catch(err => {
+            console.warn('[TOKENIZER] Failed to pre-load tokenizer:', err);
+        });
+
+        // Focus input on load
+        window.onload = () => {
+            messageInput.focus();
+        };
+    </script>
+</body>
+</html>
