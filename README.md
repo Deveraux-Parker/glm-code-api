@@ -6,4 +6,4 @@ The demo_client is a simple API demonstration client that calls the API and demo
 
 Built to be simple, hackable, and functional.
 
-Add your code plan api to the apikey.json and enjoy.
+Add your code plan api to the apikey.json and enjoy. This is specifically for the GLM coding plan, so make sure you have a code-plan specific API key to get started.
